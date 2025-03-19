@@ -9,36 +9,56 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    const response = await fetch("http://localhost:5000/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (response.ok) {
-      // Save JWT token and user role in localStorage
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("role", data.role); // Ensure role is saved
+      if (response.ok) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("role", data.role);
 
-      // Redirect based on role
-      if (data.role === "judge") navigate("/judge-dashboard");
-      else if (data.role === "petitioner") navigate("/petitioner-dashboard");
-      else if (data.role === "defendant") navigate("/defendant-dashboard");
-    } else {
-      alert("Login failed. Please check your credentials.");
+        console.log("Login successful! Role:", data.role);
+
+        // 🔥 Fix: Navigate AFTER state update using setTimeout
+        setTimeout(() => {
+          if (data.role === "judge") navigate("/judge-dashboard");
+          else if (data.role === "petitioner") navigate("/petitioner-dashboard");
+          else if (data.role === "defendant") navigate("/defendant-dashboard");
+        }, 100);
+      } else {
+        alert("Login failed. Please check your credentials.");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Something went wrong. Please try again.");
     }
   };
 
   return (
-    <div>
+    <div style={{ textAlign: "center", marginTop: "50px" }}>
       <h2>Login</h2>
       <form onSubmit={handleLogin}>
-        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
         <button type="submit">Login</button>
       </form>
     </div>
