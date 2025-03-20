@@ -4,7 +4,29 @@ import { useNavigate } from "react-router-dom";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState(""); // Add OTP state
+  const [showOtpInput, setShowOtpInput] = useState(false);
   const navigate = useNavigate();
+
+  const requestOTP = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/otp/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        alert("OTP sent to your email.");
+        setShowOtpInput(true);
+      } else {
+        alert("Failed to send OTP.");
+      }
+    } catch (error) {
+      console.error("OTP request error:", error);
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -12,10 +34,8 @@ const Login = () => {
     try {
       const response = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, otp }),
       });
 
       const data = await response.json();
@@ -23,17 +43,15 @@ const Login = () => {
       if (response.ok) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("role", data.role);
+        alert("Login successful!");
 
-        console.log("Login successful! Role:", data.role);
-
-        // 🔥 Fix: Navigate AFTER state update using setTimeout
         setTimeout(() => {
           if (data.role === "judge") navigate("/judge-dashboard");
           else if (data.role === "petitioner") navigate("/petitioner-dashboard");
           else if (data.role === "defendant") navigate("/defendant-dashboard");
         }, 100);
       } else {
-        alert("Login failed. Please check your credentials.");
+        alert("Login failed. Please check your credentials and OTP.");
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -59,7 +77,17 @@ const Login = () => {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button type="submit">Login</button>
+        {!showOtpInput && <button type="button" onClick={requestOTP}>Request OTP</button>}
+        {showOtpInput && (
+          <input
+            type="text"
+            placeholder="Enter OTP"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
+            required
+          />
+        )}
+        {showOtpInput && <button type="submit">Login</button>}
       </form>
     </div>
   );

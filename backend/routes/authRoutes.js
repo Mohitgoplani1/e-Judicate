@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { sendMail, generateOTP, otpStorage } = require('../utils/otpUtils'); 
 require('dotenv').config();
 
 const router = express.Router();
@@ -29,10 +30,9 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// User Login
 router.post('/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, otp } = req.body; // Include OTP in login request
 
         // Check if user exists
         const user = await User.findOne({ email });
@@ -42,6 +42,13 @@ router.post('/login', async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ msg: 'Invalid credentials' });
 
+        // Verify OTP before logging in
+        if (!otpStorage[email] || otpStorage[email] !== otp) {
+            return res.status(400).json({ msg: 'Invalid or expired OTP' });
+        }
+
+        delete otpStorage[email]; // Clear OTP after successful verification
+
         // Generate JWT token
         const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
@@ -50,6 +57,5 @@ router.post('/login', async (req, res) => {
         res.status(500).json({ msg: 'Server error' });
     }
 });
-
 
 module.exports = router;

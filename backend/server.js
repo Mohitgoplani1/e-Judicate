@@ -6,6 +6,7 @@ require('dotenv').config();
 // Import Routes
 const authRoutes = require('./routes/authRoutes');
 const protectedRoutes = require('./routes/protectedRoutes');
+const otpRoutes = require('./routes/otpRoutes'); // New route for OTP
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/protected', protectedRoutes);
+app.use('/api/otp', otpRoutes); // OTP Routes
 
 // Connect to MongoDB
 mongoose
