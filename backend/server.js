@@ -7,7 +7,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/authRoutes');
 const protectedRoutes = require('./routes/protectedRoutes');
 const otpRoutes = require('./routes/otpRoutes'); // New route for OTP
-
+const caseRoutes = require("./routes/cRoutes");
 const app = express();
 
 // Middleware
@@ -18,7 +18,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/protected', protectedRoutes);
 app.use('/api/otp', otpRoutes); // OTP Routes
-
+app.use('/api/cases', caseRoutes);
 // Connect to MongoDB
 mongoose
   .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
