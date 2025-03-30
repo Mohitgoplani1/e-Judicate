@@ -20,7 +20,6 @@ router.post("/register", verifyToken, isPetitioner, async (req, res) => {
     if (existingCase) {
       return res.status(400).json({ message: "Case number already exists" });
     }
-
     // Convert defendant from email to ObjectId
     const defendantUser = await User.findOne({ email: defendant });
     if (!defendantUser) {
@@ -71,15 +70,20 @@ router.get("/", verifyToken, async (req, res) => {
 /**
  * 3️⃣ Assign Hearing Date (Judge Only)
  */
-router.put("/assign-hearing/:caseId", verifyToken, isJudge, async (req, res) => {
+router.put("/assign-hearing/:caseNumber", verifyToken, isJudge, async (req, res) => {
   try {
+    
     const { hearingDate } = req.body;
     if (!hearingDate) {
       return res.status(400).json({ error: "Hearing date is required" });
     }
-
+      const casees = await Case.findOne({caseNumber : Number(req.params.caseNumber)}); ;
+    if (!casees) {
+      return res.status(404).json({ error: "Case not found" });
+    }
+    const caseId = casees._id; // Get the ObjectId of the case
     const updatedCase = await Case.findByIdAndUpdate(
-      req.params.caseId,
+      caseId,
       { hearingDate, status: "Scheduled", judge: req.user.id },
       { new: true }
     );
