@@ -14,6 +14,7 @@
   "dependencies": {
     "@clerk/clerk-sdk-node": "^5.1.6",
     "@clerk/express": "^1.3.54",
+    "backend": "file:",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
